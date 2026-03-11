@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Audit Logs{% endblock %}
+{% block breadcrumb %}<strong>System</strong> / Audit Logs{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <div>
+        <h1><i class="bi bi-journal-text me-2 text-info"></i>Audit Logs</h1>
+        <p class="text-muted">Track all system activities and changes.</p>
+    </div>
+</div>
+<div class="gms-card mb-3 fade-in">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label small text-muted">Filter by Model</label>
+            <input type="text" name="model" class="form-control" placeholder="e.g. Risk, Department" value="{{ model_filter }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small text-muted">Filter by User</label>
+            <input type="text" name="user" class="form-control" placeholder="Username" value="{{ user_filter }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-filter me-1"></i>Filter</button>
+        </div>
+        <div class="col-md-2">
+            <a href="{% url 'audit:audit_log_list' %}" class="btn btn-outline-secondary w-100 italic">Clear</a>
+        </div>
+    </form>
+</div>
+<div class="gms-card fade-in">
+    <div class="table-responsive">
+        <table class="gms-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Target</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td class="text-nowrap small text-muted">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                    <td>
+                        {% if log.user %}
+                            <span class="fw-600">{{ log.user.username }}</span>
+                            <div class="small text-muted">{{ log.user.get_role_display }}</div>
+                        {% else %}
+                            <span class="text-muted italic">System</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge bg-dark border border-secondary text-light">{{ log.action }}</span>
+                    </td>
+                    <td>
+                        <div class="small fw-600">{{ log.target_model }}</div>
+                        <div class="small text-muted">ID: {{ log.target_id|default:"—" }}</div>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                data-bs-toggle="collapse" data-bs-target="#details-{{ log.pk }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <div class="collapse mt-2" id="details-{{ log.pk }}">
+                            <div class="p-2 bg-dark rounded border border-secondary small">
+                                {% if log.old_value or log.new_value %}
+                                    <div class="mb-1 text-danger">Old: <pre class="m-0 d-inline">{{ log.old_value|default:"None" }}</pre></div>
+                                    <div class="text-success">New: <pre class="m-0 d-inline">{{ log.new_value|default:"None" }}</pre></div>
+                                {% else %}
+                                    <span class="text-muted">No value changes recorded.</span>
+                                {% endif %}
+                                <div class="mt-1 x-small text-muted">IP: {{ log.ip_address|default:"Unknown" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>No audit logs found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination pagination-sm justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1{% if model_filter %}&model={{ model_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}">««</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if model_filter %}&model={{ model_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}">«</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% if model_filter %}&model={{ model_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if model_filter %}&model={{ model_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}">»</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if model_filter %}&model={{ model_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}">»»</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+<style>
+    .fw-600 { font-weight: 600; }
+    .italic { font-style: italic; }
+    .x-small { font-size: 0.75rem; }
+    pre { white-space: pre-wrap; word-break: break-all; color: inherit; font-size: 0.8rem; }
+</style>
+{% endblock %}

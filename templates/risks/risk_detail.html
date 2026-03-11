@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}{{ risk.name }}{% endblock %}
+{% block breadcrumb %}<a href="{% url 'risks:risk_list' %}" class="text-muted text-decoration-none">Risks</a> / <strong>{{ risk.name|truncatechars:40 }}</strong>{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2 fade-in">
+  <div>
+    <h1 class="h3 mb-1">{{ risk.name }}</h1>
+    <div class="d-flex gap-2 flex-wrap">
+      <span class="status-badge status-{{ risk.status }}">{{ risk.get_status_display }}</span>
+      <span class="badge bg-secondary">Score: {{ risk.risk_score }} — {{ risk.severity_label }}</span>
+      {% if risk.is_overdue %}<span class="badge bg-danger overdue-badge"><i class="bi bi-alarm me-1"></i>OVERDUE</span>{% endif %}
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    {% if user.can_manage_risks %}<a href="{% url 'risks:risk_update' risk.pk %}" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i>Edit</a>{% endif %}
+    {% if user.can_manage_org %}<a href="{% url 'risks:risk_delete' risk.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i>Delete</a>{% endif %}
+    <a href="{% url 'risks:risk_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="gms-card mb-3 fade-in">
+      <h6 class="mb-3 text-primary fw-700"><i class="bi bi-info-circle me-2"></i>Risk Details</h6>
+      <p class="text-muted">{{ risk.description }}</p>
+      {% if risk.mitigation_plan %}
+      <hr style="border-color:var(--card-border);">
+      <h6 class="text-warning"><i class="bi bi-shield me-2"></i>Mitigation Plan</h6>
+      <p class="text-muted mb-0">{{ risk.mitigation_plan }}</p>
+      {% endif %}
+    </div>
+    {% if risk.evidence %}
+    <div class="gms-card mb-3 fade-in">
+      <h6 class="mb-2"><i class="bi bi-paperclip me-2 text-primary"></i>Evidence</h6>
+      <a href="{{ risk.evidence.url }}" class="btn btn-outline-secondary btn-sm" target="_blank"><i class="bi bi-download me-1"></i>Download Evidence</a>
+    </div>
+    {% endif %}
+    <div class="gms-card fade-in">
+      <h6 class="mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Change History</h6>
+      {% for log in history %}
+      <div class="d-flex gap-2 mb-2 pb-2 border-bottom" style="border-color:var(--card-border)!important;">
+        <span class="sidebar-avatar flex-shrink-0" style="width:28px;height:28px;font-size:0.7rem;">{{ log.user.username|first|upper }}</span>
+        <div>
+          <div class="small text-white">{{ log.action }}</div>
+          <div class="small text-muted">{{ log.user.username }} · {{ log.timestamp|timesince }} ago</div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="small text-muted text-center py-2">No history records yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-4 fade-in fade-in-delay-1">
+    <div class="gms-card mb-3">
+      <h6 class="mb-3 text-primary"><i class="bi bi-speedometer me-2"></i>Risk Scoring</h6>
+      <div class="mb-3 text-center">
+        <div style="font-size:3rem;font-weight:900;color:{% if risk.severity_color == 'success' %}#22c55e{% elif risk.severity_color == 'warning' %}#f59e0b{% elif risk.severity_color == 'danger' %}#ef4444{% else %}#8b5cf6{% endif %};">{{ risk.risk_score }}</div>
+        <div class="text-muted small">{{ risk.severity_label }} Risk</div>
+      </div>
+      <table class="table table-borderless mb-0 small">
+        <tr><th class="text-muted">Severity</th><td class="text-end fw-600">{{ risk.get_severity_display }} ({{ risk.severity }})</td></tr>
+        <tr><th class="text-muted">Likelihood</th><td class="text-end fw-600">{{ risk.get_likelihood_display }} ({{ risk.likelihood }})</td></tr>
+        <tr><th class="text-muted">Score = S×L</th><td class="text-end fw-600">{{ risk.severity }} × {{ risk.likelihood }} = {{ risk.risk_score }}</td></tr>
+      </table>
+    </div>
+    <div class="gms-card mb-3">
+      <h6 class="mb-3 text-primary"><i class="bi bi-people me-2"></i>Ownership</h6>
+      <div class="mb-2"><span class="text-muted small">Category:</span><br><strong>{{ risk.category.name|default:"—" }}</strong></div>
+      <div class="mb-2"><span class="text-muted small">Department:</span><br><strong>{{ risk.department.name|default:"—" }}</strong></div>
+      <div class="mb-2"><span class="text-muted small">Created By:</span><br><strong>{{ risk.created_by|default:"—" }}</strong></div>
+      <div class="mb-2"><span class="text-muted small">Due Date:</span><br>
+        <strong {% if risk.is_overdue %}class="text-danger"{% endif %}>{{ risk.due_date|default:"—" }}</strong>
+      </div>
+      {% if risk.assigned_to.all %}
+      <div><span class="text-muted small">Assigned To:</span><br>
+        {% for u in risk.assigned_to.all %}
+        <span class="badge bg-secondary me-1 mb-1">{{ u.username }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="gms-card">
+      <h6 class="mb-2 text-muted small">TIMELINE</h6>
+      <div class="small mb-1"><span class="text-muted">Created:</span> {{ risk.created_at|date:"d M Y, H:i" }}</div>
+      <div class="small"><span class="text-muted">Updated:</span> {{ risk.updated_at|date:"d M Y, H:i" }}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

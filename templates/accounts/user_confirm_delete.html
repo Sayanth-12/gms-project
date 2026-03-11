@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Deactivate User{% endblock %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard:index' %}" class="text-muted text-decoration-none">Dashboard</a>
+<span class="text-muted mx-2">/</span>
+<a href="{% url 'accounts:user_list' %}" class="text-muted text-decoration-none">Users</a>
+<span class="text-muted mx-2">/</span>
+<a href="{% url 'accounts:user_detail' target_user.pk %}" class="text-muted text-decoration-none">{{ target_user.username }}</a>
+<span class="text-muted mx-2">/</span>
+<span class="text-light">Deactivate</span>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-6 col-md-8">
+            <div class="card bg-dark border-danger shadow">
+                <div class="card-header bg-danger bg-opacity-25 border-danger text-center py-3">
+                    <h5 class="card-title text-danger mb-0">
+                        <i class="bi bi-person-x-fill me-2"></i> Confirm Deactivation
+                    </h5>
+                </div>
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        {% if target_user.profile_image %}
+                        <img src="{{ target_user.profile_image.url }}" alt="{{ target_user.username }}" class="rounded-circle border border-3 border-danger mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                        {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto border border-3 border-danger mb-3" style="width: 80px; height: 80px;">
+                            <span class="fs-2 fw-bold text-white">{{ target_user.username|first|upper }}</span>
+                        </div>
+                        {% endif %}
+                        <h4 class="text-white">Deactivate {{ target_user.get_full_name|default:target_user.username }}?</h4>
+                    </div>
+                    <p class="text-light fs-6 mb-4">Are you sure you want to deactivate the account for <strong>"{{ target_user.email }}"</strong>?</p>
+                    <div class="alert alert-dark border-secondary text-start mb-4">
+                        <ul class="mb-0 text-muted small ps-3">
+                            <li>The user will no longer be able to log in to the system.</li>
+                            <li>The user's associated data (created risks, audit logs) <strong>will be retained</strong> for historical purposes.</li>
+                            <li>A super administrator can reactivate this account later if needed.</li>
+                        </ul>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-danger px-4">Yes, Deactivate Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

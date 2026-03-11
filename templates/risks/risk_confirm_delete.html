@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Delete Risk{% endblock %}
+{% block content %}
+<div class="row fade-in">
+    <div class="col-lg-6 mx-auto mt-5">
+        <div class="gms-card border-danger">
+            <div class="card-body p-5 text-center">
+                <div class="mb-4">
+                    <i class="bi bi-exclamation-octagon text-danger display-1"></i>
+                </div>
+                <h2 class="h3 mb-3 text-white">Confirm Deletion</h2>
+                <p class="text-muted mb-4">
+                    Are you sure you want to permanently delete the risk:<br>
+                    <strong class="text-white">"{{ risk.name }}"</strong>?
+                </p>
+                <div class="alert alert-dark border-danger text-start small">
+                    <i class="bi bi-info-circle me-2 text-danger"></i>
+                    This action cannot be undone and will remove all associated audit history from the main list.
+                </div>
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'risks:risk_detail' risk.pk %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="bi bi-trash me-2"></i>Delete Permanently
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .gms-card {
+        background: rgba(33, 37, 41, 0.4);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(220, 53, 69, 0.2);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+</style>
+{% endblock %}

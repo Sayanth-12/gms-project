@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}User Details: {{ profile_user.username }}{% endblock %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard:index' %}" class="text-muted text-decoration-none">Dashboard</a>
+<span class="text-muted mx-2">/</span>
+<a href="{% url 'accounts:user_list' %}" class="text-muted text-decoration-none">Users</a>
+<span class="text-muted mx-2">/</span>
+<span class="text-light">{{ profile_user.username }}</span>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-xl-4 col-lg-5 mb-4">
+        <div class="card bg-dark border-secondary shadow-sm h-100">
+            <div class="card-body text-center pt-5">
+                <div class="position-relative d-inline-block mb-3">
+                    {% if profile_user.profile_image %}
+                    <img src="{{ profile_user.profile_image.url }}" alt="{{ profile_user.username }}" class="rounded-circle border border-3 {% if profile_user.is_active %}border-success{% else %}border-danger{% endif %}" style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto border border-3 {% if profile_user.is_active %}border-success{% else %}border-danger{% endif %}" style="width: 120px; height: 120px;">
+                        <span class="fs-1 fw-bold text-white">{{ profile_user.username|first|upper }}</span>
+                    </div>
+                    {% endif %}
+                    <span class="position-absolute bottom-0 end-0 p-2 bg-{% if profile_user.is_active %}success{% else %}danger{% endif %} border border-dark rounded-circle" title="{% if profile_user.is_active %}Active{% else %}Inactive{% endif %} account">
+                        <span class="visually-hidden">Status</span>
+                    </span>
+                </div>
+                <h4 class="text-white mb-1">{{ profile_user.get_full_name|default:profile_user.username }}</h4>
+                <p class="text-info mb-3">{{ profile_user.get_role_display }}</p>
+                {% if request.user.is_super_admin or profile_user == request.user %}
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                    <a href="{% url 'accounts:user_update' profile_user.pk %}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-pencil me-1"></i> Edit User
+                    </a>
+                    {% if profile_user != request.user and profile_user.is_active and request.user.is_super_admin %}
+                    <a href="{% url 'accounts:user_delete' profile_user.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-person-x me-1"></i> Deactivate
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <ul class="list-group list-group-flush text-start bg-transparent border-top border-secondary pt-2">
+                    <li class="list-group-item bg-transparent border-0 px-0 text-muted">
+                        <i class="bi bi-envelope me-2 text-primary"></i> <a href="mailto:{{ profile_user.email }}" class="text-info text-decoration-none">{{ profile_user.email }}</a>
+                    </li>
+                    <li class="list-group-item bg-transparent border-0 px-0 text-muted">
+                        <i class="bi bi-telephone me-2 text-primary"></i> {{ profile_user.phone|default:"Not provided" }}
+                    </li>
+                    <li class="list-group-item bg-transparent border-0 px-0 text-muted">
+                        <i class="bi bi-diagram-3 me-2 text-primary"></i> 
+                        {% if profile_user.department %}
+                            <a href="{% url 'organization:dept_detail' profile_user.department.pk %}" class="text-info text-decoration-none">{{ profile_user.department.name }}</a>
+                        {% else %}
+                            No Department
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item bg-transparent border-0 px-0 text-muted">
+                        <i class="bi bi-calendar3 me-2 text-primary"></i> Joined {{ profile_user.date_joined|date:"M d, Y" }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-8 col-lg-7 mb-4">
+        <div class="card bg-dark border-secondary shadow-sm mb-4">
+            <div class="card-header border-secondary">
+                <h5 class="card-title text-white mb-0">About</h5>
+            </div>
+            <div class="card-body">
+                {% if profile_user.bio %}
+                    <p class="text-light">{{ profile_user.bio|linebreaks }}</p>
+                {% else %}
+                    <p class="text-muted font-italic mb-0">No bio provided.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card bg-dark border-secondary shadow-sm">
+            <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="card-title text-white mb-0">System Activity Overview</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush bg-transparent">
+                    <div class="list-group-item bg-transparent border-secondary text-light d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <i class="bi bi-clock-history text-info me-3"></i> 
+                            Last Login
+                        </div>
+                        <span class="text-muted">{{ profile_user.last_login|date:"M d, Y H:i"|default:"Never logged in" }}</span>
+                    </div>
+                    {% if profile_user.is_staff or profile_user.is_superuser %}
+                    <div class="list-group-item bg-transparent border-secondary text-warning d-flex align-items-center py-3">
+                        <i class="bi bi-shield-exclamation text-warning me-3"></i> 
+                        This user holds administrative or staff permissions in the underlying CMS.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

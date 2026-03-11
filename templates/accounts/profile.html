@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}My Profile{% endblock %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard:index' %}" class="text-muted text-decoration-none">Dashboard</a>
+<span class="text-muted mx-2">/</span>
+<span class="text-light">Profile</span>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-xl-4 col-lg-5 mb-4">
+        <div class="card bg-dark border-secondary shadow-sm h-100">
+            <div class="card-body text-center pt-5">
+                <div class="position-relative d-inline-block mb-3">
+                    {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="rounded-circle border border-3 border-primary" style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto border border-3 border-primary" style="width: 120px; height: 120px;">
+                        <span class="fs-1 fw-bold text-white">{{ user.username|first|upper }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <h4 class="text-white mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                <p class="text-info mb-3">{{ user.get_role_display }}</p>
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                    <a href="{% url 'accounts:password_change' %}" class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-key me-1"></i> Change Password
+                    </a>
+                </div>
+                <ul class="list-group list-group-flush text-start bg-transparent border-top border-secondary pt-2">
+                    <li class="list-group-item bg-transparent border-0 px-0 text-muted">
+                        <i class="bi bi-envelope me-2 text-primary"></i> {{ user.email }}
+                    </li>
+                    <li class="list-group-item bg-transparent border-0 px-0 text-muted">
+                        <i class="bi bi-telephone me-2 text-primary"></i> {{ user.phone|default:"Not provided" }}
+                    </li>
+                    <li class="list-group-item bg-transparent border-0 px-0 text-muted">
+                        <i class="bi bi-diagram-3 me-2 text-primary"></i> 
+                        {{ user.department.name|default:"No Department" }}
+                        {% if user.department %}({{ user.department.organization.name }}){% endif %}
+                    </li>
+                    <li class="list-group-item bg-transparent border-0 px-0 text-muted">
+                        <i class="bi bi-calendar3 me-2 text-primary"></i> Joined {{ user.date_joined|date:"M d, Y" }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-8 col-lg-7 mb-4">
+        <div class="card bg-dark border-secondary shadow-sm h-100">
+            <div class="card-header border-secondary">
+                <h5 class="card-title text-white mb-0">Edit Profile</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.first_name|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.last_name|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.email|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.phone|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.bio|as_crispy_field }}
+                    </div>
+                    <div class="mb-4">
+                        {{ form.profile_image|as_crispy_field }}
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="reset" class="btn btn-outline-secondary px-4">Reset</button>
+                        <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

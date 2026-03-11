@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Dashboard{% endblock %}
+{% block breadcrumb %}<strong>Dashboard</strong> <span class="text-muted">/ Overview</span>{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+  <div>
+    <h1><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard</h1>
+    <p>Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong> — Here's your risk overview.</p>
+  </div>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-2 fade-in fade-in-delay-1">
+    <div class="stat-card stat-primary">
+      <div class="stat-icon bg-primary-soft"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="stat-value">{{ total_risks }}</div>
+      <div class="stat-label">Total Risks</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2 fade-in fade-in-delay-2">
+    <div class="stat-card stat-danger">
+      <div class="stat-icon bg-danger-soft"><i class="bi bi-circle-fill"></i></div>
+      <div class="stat-value">{{ open_risks }}</div>
+      <div class="stat-label">Open</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2 fade-in fade-in-delay-3">
+    <div class="stat-card stat-warning">
+      <div class="stat-icon bg-warning-soft"><i class="bi bi-arrow-repeat"></i></div>
+      <div class="stat-value">{{ inprogress_risks }}</div>
+      <div class="stat-label">In Progress</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2 fade-in fade-in-delay-4">
+    <div class="stat-card stat-success">
+      <div class="stat-icon bg-success-soft"><i class="bi bi-check-circle"></i></div>
+      <div class="stat-value">{{ closed_risks }}</div>
+      <div class="stat-label">Closed</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2 fade-in fade-in-delay-1">
+    <div class="stat-card stat-purple">
+      <div class="stat-icon bg-purple-soft"><i class="bi bi-shield-exclamation"></i></div>
+      <div class="stat-value">{{ critical_risks }}</div>
+      <div class="stat-label">Critical</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2 fade-in fade-in-delay-2">
+    <div class="stat-card stat-danger">
+      <div class="stat-icon bg-danger-soft"><i class="bi bi-clock-history"></i></div>
+      <div class="stat-value">{{ overdue_risks }}</div>
+      <div class="stat-label">Overdue</div>
+    </div>
+  </div>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-md-4 fade-in">
+    <div class="gms-card h-100">
+      <h6 class="mb-3 fw-700"><i class="bi bi-pie-chart me-2 text-primary"></i>Risks by Status</h6>
+      <div class="chart-container">
+        <canvas id="statusChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 fade-in fade-in-delay-1">
+    <div class="gms-card h-100">
+      <h6 class="mb-3 fw-700"><i class="bi bi-bar-chart me-2 text-primary"></i>By Department</h6>
+      <div class="chart-container">
+        <canvas id="deptChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 fade-in fade-in-delay-2">
+    <div class="gms-card h-100">
+      <h6 class="mb-3 fw-700"><i class="bi bi-bar-chart-steps me-2 text-primary"></i>By Severity Level</h6>
+      <div class="chart-container">
+        <canvas id="severityChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-7 fade-in">
+    <div class="gms-card">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Risks</h6>
+        <a href="{% url 'risks:risk_list' %}" class="btn btn-sm btn-outline-secondary">View All</a>
+      </div>
+      <table class="gms-table">
+        <thead>
+          <tr>
+            <th>Risk</th><th>Score</th><th>Status</th><th>Due</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for risk in recent_risks %}
+          <tr>
+            <td>
+              <a href="{% url 'risks:risk_detail' risk.pk %}" class="fw-600 text-decoration-none text-white">{{ risk.name|truncatechars:40 }}</a>
+              {% if risk.department %}<div class="small text-muted">{{ risk.department.name }}</div>{% endif %}
+            </td>
+            <td>
+              <span class="risk-score-badge badge-risk-{{ risk.severity_color|default:'medium' }}">{{ risk.risk_score }}</span>
+            </td>
+            <td>
+              <span class="status-badge status-{{ risk.status }}">{{ risk.get_status_display }}</span>
+            </td>
+            <td>
+              {% if risk.due_date %}
+                {% if risk.is_overdue %}
+                  <span class="text-danger overdue-badge small"><i class="bi bi-alarm"></i> {{ risk.due_date }}</span>
+                {% else %}
+                  <span class="text-muted small">{{ risk.due_date }}</span>
+                {% endif %}
+              {% else %}
+              <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center text-muted py-4">No risks found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-lg-5 fade-in fade-in-delay-1">
+    <div class="gms-card mb-3">
+      <h6 class="mb-3"><i class="bi bi-alarm text-danger me-2"></i>Overdue Risks</h6>
+      {% for risk in overdue_list %}
+      <div class="d-flex align-items-center gap-2 mb-2 py-2 border-bottom" style="border-color:var(--card-border)!important;">
+        <span class="risk-score-badge badge-risk-{{ risk.severity_color|default:'high' }} flex-shrink-0">{{ risk.risk_score }}</span>
+        <div class="flex-grow-1 overflow-hidden">
+          <a href="{% url 'risks:risk_detail' risk.pk %}" class="text-decoration-none text-white small fw-600 d-block text-truncate">{{ risk.name }}</a>
+          <span class="text-danger small overdue-badge">Due: {{ risk.due_date }}</span>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center text-muted py-3"><i class="bi bi-check-circle text-success fs-3 d-block mb-2"></i>No overdue risks!</div>
+      {% endfor %}
+    </div>
+    <div class="gms-card">
+      <h6 class="mb-3"><i class="bi bi-journal-text text-primary me-2"></i>Recent Activity</h6>
+      {% for log in recent_logs %}
+      <div class="d-flex gap-2 mb-2">
+        <span class="sidebar-avatar flex-shrink-0" style="width:28px;height:28px;font-size:0.7rem;">
+          {{ log.user.username|first|upper }}
+        </span>
+        <div>
+          <div class="small text-white" style="line-height:1.3;">{{ log.action|truncatechars:60 }}</div>
+          <div class="small text-muted">{{ log.timestamp|timesince }} ago</div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center text-muted small py-2">No activity yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: true,
+  plugins: { legend: { labels: { color: '#8b92a5', font: { size: 12 } } } },
+};
+fetch("{% url 'dashboard:chart_status' %}")
+  .then(r => r.json()).then(data => {
+    new Chart(document.getElementById('statusChart'), {
+      type: 'doughnut',
+      data: { labels: data.labels, datasets: [{ data: data.counts, backgroundColor: data.colors, borderWidth: 0 }] },
+      options: { ...chartDefaults, cutout: '70%' }
+    });
+  });
+fetch("{% url 'dashboard:chart_dept' %}")
+  .then(r => r.json()).then(data => {
+    new Chart(document.getElementById('deptChart'), {
+      type: 'bar',
+      data: { labels: data.labels, datasets: [{ label: 'Risks', data: data.counts, backgroundColor: '#6366f1', borderRadius: 6 }] },
+      options: { ...chartDefaults, scales: { x: { ticks: { color: '#8b92a5' } }, y: { ticks: { color: '#8b92a5' }, grid: { color: 'rgba(255,255,255,0.05)' } } }, plugins: { legend: { display: false } } }
+    });
+  });
+fetch("{% url 'dashboard:chart_severity' %}")
+  .then(r => r.json()).then(data => {
+    new Chart(document.getElementById('severityChart'), {
+      type: 'bar',
+      data: { labels: data.labels, datasets: [{ label: 'Risks', data: data.counts, backgroundColor: data.colors, borderRadius: 6 }] },
+      options: { ...chartDefaults, scales: { x: { ticks: { color: '#8b92a5' } }, y: { ticks: { color: '#8b92a5' }, grid: { color: 'rgba(255,255,255,0.05)' } } }, plugins: { legend: { display: false } } }
+    });
+  });
+</script>
+{% endblock %}

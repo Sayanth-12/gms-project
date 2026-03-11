@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Organization Details{% endblock %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard:index' %}" class="text-muted text-decoration-none">Dashboard</a>
+<span class="text-muted mx-2">/</span>
+<span class="text-light">Organization</span>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h3 mb-0 text-white">Organization Details</h2>
+        {% if user.can_manage_org %}
+        <div>
+            {% if org %}
+            <a href="{% url 'organization:org_update' %}" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i> Edit Organization
+            </a>
+            {% else %}
+            <a href="{% url 'organization:org_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Add Organization
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% if org %}
+    <div class="row">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card bg-dark border-secondary mb-4">
+                <div class="card-header border-secondary">
+                    <h5 class="card-title text-white mb-0">Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        {% if org.logo %}
+                        <img src="{{ org.logo.url }}" alt="{{ org.name }} logo" class="me-4 rounded bg-white p-1" style="width: 100px; height: 100px; object-fit: contain;">
+                        {% else %}
+                        <div class="bg-secondary rounded d-flex align-items-center justify-content-center me-4" style="width: 100px; height: 100px;">
+                            <i class="bi bi-building fs-1 text-white"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h3 class="text-white mb-1">{{ org.name }}</h3>
+                            {% if org.website %}
+                            <a href="{{ org.website }}" target="_blank" class="text-info text-decoration-none">
+                                <i class="bi bi-globe me-1"></i> {{ org.website }}
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if org.description %}
+                    <h5 class="text-light mt-4 mb-2">Description</h5>
+                    <p class="text-muted">{{ org.description|linebreaks }}</p>
+                    {% endif %}
+                    {% if org.mission %}
+                    <h5 class="text-light mt-4 mb-2">Mission</h5>
+                    <p class="text-muted">{{ org.mission|linebreaks }}</p>
+                    {% endif %}
+                    {% if org.vision %}
+                    <h5 class="text-light mt-4 mb-2">Vision</h5>
+                    <p class="text-muted">{{ org.vision|linebreaks }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-lg-5">
+            <div class="card bg-dark border-secondary mb-4">
+                <div class="card-header border-secondary">
+                    <h5 class="card-title text-white mb-0">Contact & Location</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush bg-transparent">
+                        {% if org.email %}
+                        <li class="list-group-item bg-transparent text-muted px-0 border-secondary">
+                            <i class="bi bi-envelope me-2 text-primary"></i> <strong>Email:</strong><br>
+                            <a href="mailto:{{ org.email }}" class="text-info text-decoration-none">{{ org.email }}</a>
+                        </li>
+                        {% endif %}
+                        {% if org.phone %}
+                        <li class="list-group-item bg-transparent text-muted px-0 border-secondary">
+                            <i class="bi bi-telephone me-2 text-primary"></i> <strong>Phone:</strong><br>
+                            {{ org.phone }}
+                        </li>
+                        {% endif %}
+                        <li class="list-group-item bg-transparent text-muted px-0 border-secondary">
+                            <i class="bi bi-geo-alt me-2 text-primary"></i> <strong>Address:</strong><br>
+                            {% if org.address %}{{ org.address }}<br>{% endif %}
+                            {% if org.city %}{{ org.city }}{% endif %}{% if org.state %}, {{ org.state }}{% endif %}<br>
+                            {{ org.country }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card bg-dark border-secondary">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Departments</h6>
+                        <h3 class="text-white mb-0">{{ org.departments.count }}</h3>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                        <i class="bi bi-diagram-3 text-primary fs-3"></i>
+                    </div>
+                </div>
+                <div class="card-footer border-secondary text-center">
+                    <a href="{% url 'organization:dept_list' %}" class="text-info text-decoration-none">View All Departments <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card bg-dark border-secondary text-center p-5">
+        <i class="bi bi-building text-muted mb-3" style="font-size: 4rem;"></i>
+        <h4 class="text-white">No Organization Configured</h4>
+        <p class="text-muted">The organization profile has not been set up yet.</p>
+        {% if user.can_manage_org %}
+        <div class="mt-3">
+            <a href="{% url 'organization:org_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Setup Organization Profile
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

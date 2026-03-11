@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Risk{% endblock %}
+{% block breadcrumb %}<a href="{% url 'risks:risk_list' %}" class="text-decoration-none text-muted">Risks</a> / {{ action }}{% endblock %}
+{% block content %}
+<div class="row fade-in">
+    <div class="col-lg-8 mx-auto">
+        <div class="gms-card">
+            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                <h2 class="mb-0"><i class="bi bi-exclamation-triangle me-2 text-primary"></i>{{ action }} Risk</h2>
+                <p class="text-muted small mt-2">Fill in the details below to {{ action|lower }} the risk.</p>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-600">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-600">{{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.category.id_for_label }}" class="form-label fw-600">{{ form.category.label }}</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}<div class="text-danger small">{{ form.category.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.department.id_for_label }}" class="form-label fw-600">{{ form.department.label }}</label>
+                            {{ form.department }}
+                            {% if form.department.errors %}<div class="text-danger small">{{ form.department.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.severity.id_for_label }}" class="form-label fw-600">{{ form.severity.label }}</label>
+                            {{ form.severity }}
+                            {% if form.severity.errors %}<div class="text-danger small">{{ form.severity.errors }}</div>{% endif %}
+                            <div class="form-text small">Select the potential impact of this risk.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.likelihood.id_for_label }}" class="form-label fw-600">{{ form.likelihood.label }}</label>
+                            {{ form.likelihood }}
+                            {% if form.likelihood.errors %}<div class="text-danger small">{{ form.likelihood.errors }}</div>{% endif %}
+                            <div class="form-text small">Select the probability of occurrence.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.status.id_for_label }}" class="form-label fw-600">{{ form.status.label }}</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.due_date.id_for_label }}" class="form-label fw-600">{{ form.due_date.label }}</label>
+                            {{ form.due_date }}
+                            {% if form.due_date.errors %}<div class="text-danger small">{{ form.due_date.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label for="{{ form.assigned_to.id_for_label }}" class="form-label fw-600">{{ form.assigned_to.label }}</label>
+                            {{ form.assigned_to }}
+                            {% if form.assigned_to.errors %}<div class="text-danger small">{{ form.assigned_to.errors }}</div>{% endif %}
+                            <div class="form-text small">Hold Ctrl (or Cmd) to select multiple users.</div>
+                        </div>
+                        <div class="col-12">
+                            <label for="{{ form.mitigation_plan.id_for_label }}" class="form-label fw-600">{{ form.mitigation_plan.label }}</label>
+                            {{ form.mitigation_plan }}
+                            {% if form.mitigation_plan.errors %}<div class="text-danger small">{{ form.mitigation_plan.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label for="{{ form.evidence.id_for_label }}" class="form-label fw-600">{{ form.evidence.label }}</label>
+                            {{ form.evidence }}
+                            {% if form.evidence.errors %}<div class="text-danger small">{{ form.evidence.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top border-secondary">
+                        <a href="{% url 'risks:risk_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-5">
+                            <i class="bi bi-check-lg me-1"></i>Save Risk
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .fw-600 { font-weight: 600; }
+    .gms-card {
+        background: rgba(33, 37, 41, 0.4);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .form-control, .form-select {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #e9ecef;
+        padding: 0.75rem 1rem;
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: #0d6efd;
+        color: #fff;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    .form-label {
+        color: #adb5bd;
+        margin-bottom: 0.5rem;
+    }
+    .form-text {
+        color: #6c757d;
+    }
+</style>
+{% endblock %}

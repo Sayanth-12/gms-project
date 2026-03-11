@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Department: {{ dept.name }}{% endblock %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard:index' %}" class="text-muted text-decoration-none">Dashboard</a>
+<span class="text-muted mx-2">/</span>
+<a href="{% url 'organization:dept_list' %}" class="text-muted text-decoration-none">Departments</a>
+<span class="text-muted mx-2">/</span>
+<span class="text-light">{{ dept.name }}</span>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card bg-dark border-secondary mb-4 shadow-sm">
+            <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="card-title text-white mb-0">Department Details</h5>
+                {% if user.can_manage_org %}
+                <a href="{% url 'organization:dept_update' dept.pk %}" class="btn btn-sm btn-outline-info">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-primary bg-opacity-25 rounded d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-diagram-2 fs-2 text-primary"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white mb-0">{{ dept.name }}</h2>
+                        <span class="text-muted small">Part of: <strong>{{ dept.organization.name }}</strong></span>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h6 class="text-muted text-uppercase small font-weight-bold mb-2">Description</h6>
+                    <p class="text-light">{{ dept.description|default:"No description provided."|linebreaks }}</p>
+                </div>
+                <div class="row pt-3 border-top border-secondary">
+                    <div class="col-sm-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-badge fs-4 text-info me-3"></i>
+                            <div>
+                                <span class="d-block small text-muted">Department Head</span>
+                                <span class="d-block fw-bold text-light">
+                                    {% if dept.head %}
+                                        {{ dept.head.get_full_name }}
+                                        {% if dept.head.email %}
+                                            <a href="mailto:{{ dept.head.email }}" class="small ms-2 text-muted"><i class="bi bi-envelope"></i></a>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-warning fst-italic">Unassigned</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-people fs-4 text-success me-3"></i>
+                            <div>
+                                <span class="d-block small text-muted">Team Size</span>
+                                <span class="d-block fw-bold text-light">{{ members.count }} Member{{ members.count|pluralize }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card bg-dark border-secondary shadow-sm mb-4">
+            <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="card-title text-white mb-0">Top Department Risks</h5>
+                <a href="{% url 'risks:risk_list' %}?department={{ dept.pk }}" class="btn btn-sm btn-link text-info">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-muted border-secondary">Risk Title</th>
+                                <th class="text-muted border-secondary text-center">Score</th>
+                                <th class="text-muted border-secondary text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for risk in risks %}
+                            <tr>
+                                <td class="border-secondary align-middle">
+                                    <a href="{% url 'risks:risk_detail' risk.pk %}" class="text-decoration-none text-light">{{ risk.title }}</a>
+                                </td>
+                                <td class="border-secondary text-center align-middle">
+                                    <span class="badge bg-{% if risk.risk_score >= 15 %}danger{% elif risk.risk_score >= 8 %}warning text-dark{% else %}success{% endif %}">
+                                        {{ risk.risk_score }}
+                                    </span>
+                                </td>
+                                <td class="border-secondary text-center align-middle">
+                                    {{ risk.get_status_display }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="border-secondary text-center text-muted py-3">No active risks mapped to this department.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-5">
+        <div class="card bg-dark border-secondary shadow-sm">
+            <div class="card-header border-secondary">
+                <h5 class="card-title text-white mb-0">Department Members</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush bg-transparent">
+                    {% for member in members %}
+                    <li class="list-group-item bg-transparent border-secondary text-light d-flex justify-content-between align-items-center py-3">
+                        <div class="d-flex align-items-center">
+                            {% if member.profile_image %}
+                            <img src="{{ member.profile_image.url }}" class="rounded-circle me-3" width="40" height="40" alt="{{ member.username }}" style="object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle me-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <span class="text-white">{{ member.username|first|upper }}</span>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div class="fw-bold">{{ member.get_full_name|default:member.username }}</div>
+                                <div class="small text-muted">{{ member.get_role_display }}</div>
+                            </div>
+                        </div>
+                        {% if member == dept.head %}
+                        <span class="badge bg-primary rounded-pill">Head</span>
+                        {% endif %}
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item bg-transparent border-secondary text-center text-muted py-4">
+                        <i class="bi bi-person-x fs-2 mb-2 d-block text-secondary"></i>
+                        No members assigned yet.
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
